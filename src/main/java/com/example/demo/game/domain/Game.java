@@ -1,5 +1,7 @@
 package com.example.demo.game.domain;
 
+import lombok.Setter;
+
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
@@ -10,6 +12,7 @@ public class Game {
     private final String hostId;
     private int roundNumber;
     private String currentPrompt;
+    private int maxRounds = 5;
 
     private GameState state;
 
@@ -20,14 +23,13 @@ public class Game {
 
 
     private Instant roundEndTime;
-
     public Game(String id, String hostId) {
         this.id = id;
         this.hostId = hostId;
         this.state = GameState.LOBBY;
         this.roundNumber = 0;
     }
-
+    //-----------------------------------------LOBBY--------------------------------------------------------//
     public void startGame() {
         if (state != GameState.LOBBY) {
             throw new IllegalStateException("Game already started");
@@ -62,6 +64,7 @@ public class Game {
         scores.put(playerId, 0);
     }
 
+    //-----------------------------------------SUBMISSION--------------------------------------------------------//
     public void submit(String playerId, String text) {
         if (state != GameState.SUBMISSION) {
             throw new IllegalStateException("Submissions are not allowed right now");
@@ -86,6 +89,9 @@ public class Game {
         submissions.put(playerId, text);
     }
 
+
+    public void assignWords(){}
+
     public void endRound() {
         if (state != GameState.SUBMISSION) {
             throw new IllegalStateException("Cannot end round in current state");
@@ -94,12 +100,40 @@ public class Game {
         state = GameState.SCORING;
     }
 
-    public void submit() {
-        if (state != GameState.SUBMISSION) {
-            throw new IllegalStateException("Can't submit in current state");
+
+    //-----------------------------------------SCORING--------------------------------------------------------//
+    public void scoreRound() {
+        if (state != GameState.SCORING) {
+            throw new IllegalStateException("Not in scoring state");
         }
 
+        for (String playerId : submissions.keySet()) {
+            scores.put(playerId, scores.getOrDefault(playerId, 0) + 1);
+        }
     }
+
+    public void startNextRound() {
+        if (state != GameState.SCORING) {
+            throw new IllegalStateException("Not in scoring state");
+        }
+
+        if (roundNumber >= maxRounds) {
+            state = GameState.FINISHED;
+            roundEndTime = null;
+            currentPrompt = null;
+            return;
+        }
+
+        roundNumber++;
+        submissions.clear();
+        currentPrompt = "Current Prompt"; // stub for now, promptService.generate.prompt() later
+        roundEndTime = Instant.now().plusSeconds(60);
+        state = GameState.SUBMISSION;
+    }
+
+
+
+
 
 }
 
