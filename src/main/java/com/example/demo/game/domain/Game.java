@@ -12,6 +12,7 @@ public class Game {
     private final String hostId;
     private int roundNumber;
     private String currentPrompt;
+    @Setter
     private int maxRounds = 5;
 
     private GameState state;
@@ -130,8 +131,6 @@ public class Game {
         roundEndTime = Instant.now().plusSeconds(60);
         state = GameState.SUBMISSION;
     }
-
-
 
 
 
