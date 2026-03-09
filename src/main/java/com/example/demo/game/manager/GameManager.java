@@ -19,8 +19,8 @@ public class GameManager {
         games.put(gameId, game);
         return gameId;
     }
-
-    public Game getGame(String gameId) {
+    //Helper, if read only data is needed, return DTO instead
+    private Game getGame(String gameId) {
         Game game = games.get(gameId);
         if (game == null) throw new NoSuchElementException("Game not found: " + gameId);
         return game;
