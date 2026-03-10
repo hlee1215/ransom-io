@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.Instant;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -23,13 +24,18 @@ public class Game {
     private GameState state;
     @Getter
     private final Map<String, Player> players = new HashMap<>();
-    @Getter // add a player state later
+     // add a player state later
     private final Map<String, String> submissions = new HashMap<>();
-    @Getter
+
     private final Map<String, Integer> scores = new HashMap<>();
     private int maxPlayerCount = 5; // Hardcoded for now
 
-
+    public Map<String, Player> getPlayers() {
+        return Collections.unmodifiableMap(players);
+    }
+    public Map<String, String> getSubmissions() {
+        return Collections.unmodifiableMap(submissions);
+    }
     private Instant roundEndTime;
     public Game(String id, String hostId) {
         this.id = id;
