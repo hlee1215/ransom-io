@@ -2,12 +2,16 @@ package com.example.demo.game.manager;
 
 import com.example.demo.game.domain.Game;
 import com.example.demo.game.domain.Player;
+import com.example.demo.websocket.dto.LobbyState;
+import com.example.demo.websocket.dto.PlayerView;
+import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-
+@Component
 public class GameManager {
 
     private final Map<String, Game> games = new ConcurrentHashMap<>();
@@ -65,6 +69,26 @@ public class GameManager {
         Game game = getGame(gameId);
         synchronized (game) {
             game.startNextRound();
+        }
+    }
+
+    public LobbyState getLobbyState(String gameId) {
+        Game game = getGame(gameId);
+
+        synchronized (game) {
+
+            List<PlayerView> players = game.getPlayers()
+                    .values()
+                    .stream()
+                    .map(p -> new PlayerView(p.getId(), p.getName()))
+                    .toList();
+
+            return new LobbyState(
+                    gameId,
+                    game.getState().name(),
+                    players.size(),
+                    players
+            );
         }
     }
 }

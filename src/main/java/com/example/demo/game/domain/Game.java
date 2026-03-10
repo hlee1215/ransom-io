@@ -1,5 +1,6 @@
 package com.example.demo.game.domain;
 
+import lombok.Getter;
 import lombok.Setter;
 
 import java.time.Instant;
@@ -7,18 +8,24 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Game {
-
+    @Getter
     private final String id;
+    @Getter
     private final String hostId;
+    @Getter
     private int roundNumber;
+    @Getter
     private String currentPrompt;
     @Setter
     private int maxRounds = 5;
 
+    @Getter
     private GameState state;
-
-    private final Map<String, Player> players = new HashMap<>(); // add a player state later
+    @Getter
+    private final Map<String, Player> players = new HashMap<>();
+    @Getter // add a player state later
     private final Map<String, String> submissions = new HashMap<>();
+    @Getter
     private final Map<String, Integer> scores = new HashMap<>();
     private int maxPlayerCount = 5; // Hardcoded for now
 
