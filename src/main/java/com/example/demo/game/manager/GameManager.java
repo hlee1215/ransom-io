@@ -37,10 +37,10 @@ public class GameManager {
         }
     }
 
-    public void startGame(String gameId) {
+    public void startGame(String gameId, String requesterId) {
         Game game = getGame(gameId);
         synchronized (game) {
-            game.startGame();
+            game.startGame(requesterId);
         }
     }
 

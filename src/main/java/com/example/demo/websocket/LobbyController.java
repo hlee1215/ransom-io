@@ -5,6 +5,8 @@ package com.example.demo.websocket;
 import com.example.demo.game.domain.Player;
 import com.example.demo.game.manager.GameManager;
 import com.example.demo.websocket.dto.JoinLobbyMessage;
+import com.example.demo.websocket.dto.LobbyState;
+import com.example.demo.websocket.dto.StartGameMessage;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
@@ -22,7 +24,7 @@ public class LobbyController {
 
     @MessageMapping("/lobby.join")
     public void joinLobby(JoinLobbyMessage message) {
-
+        LobbyState lobbyState = gameManager.getLobbyState(message.gameId());
         Player player = new Player(
                 message.playerId(),
                 message.name()
@@ -34,7 +36,22 @@ public class LobbyController {
         );
         messagingTemplate.convertAndSend(
                 "/topic/lobby." + message.gameId(),
-                message
+                lobbyState
         );
     }
+
+    @MessageMapping("/game.start")
+    public void startGame(StartGameMessage message) {
+        gameManager.startGame(
+                message.gameId(), message.playerId()
+        );
+
+        LobbyState state = gameManager.getLobbyState(message.gameId());
+
+        messagingTemplate.convertAndSend(
+                "/topic/lobby." + message.gameId(),
+                state
+        );
+    }
+
 }

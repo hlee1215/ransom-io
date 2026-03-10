@@ -44,7 +44,11 @@ public class Game {
         this.roundNumber = 0;
     }
     //-----------------------------------------LOBBY--------------------------------------------------------//
-    public void startGame() {
+    public void startGame(String requesterId) {
+        if (!hostId.equals(requesterId)) {
+            throw new IllegalStateException("Only host can start game");
+        }
+
         if (state != GameState.LOBBY) {
             throw new IllegalStateException("Game already started");
         }
