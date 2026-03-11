@@ -26,7 +26,7 @@ public class Game {
     private final Map<String, Player> players = new HashMap<>();
      // add a player state later
     private final Map<String, String> submissions = new HashMap<>();
-
+    @Getter
     private final Map<String, Integer> scores = new HashMap<>();
     private int maxPlayerCount = 5; // Hardcoded for now
 
@@ -149,7 +149,6 @@ public class Game {
         roundEndTime = Instant.now().plusSeconds(60);
         state = GameState.SUBMISSION;
     }
-
 
 
 }

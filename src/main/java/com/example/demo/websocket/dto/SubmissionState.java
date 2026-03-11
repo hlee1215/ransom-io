@@ -4,8 +4,9 @@ import java.time.Instant;
 
 public record SubmissionState(
         String gameId,
+        String state,
         int roundNumber,
         Instant roundEndTime,
         int submittedCount,
-        int totalPlayers
+        int playersRemaining
 ) {}

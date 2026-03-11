@@ -4,25 +4,30 @@ package com.example.demo.websocket;
 
 import com.example.demo.game.domain.Player;
 import com.example.demo.game.manager.GameManager;
+import com.example.demo.game.timer.RoundTimerService;
 import com.example.demo.websocket.dto.*;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
+
+import java.time.Instant;
 
 @Controller
 public class LobbyController {
 
     private final GameManager gameManager;
     private final SimpMessagingTemplate messagingTemplate;
+    private final RoundTimerService roundTimerService;
 
-    public LobbyController(GameManager gameManager, SimpMessagingTemplate messagingTemplate) {
+    public LobbyController(GameManager gameManager, SimpMessagingTemplate messagingTemplate, RoundTimerService roundTimerService) {
         this.gameManager = gameManager;
         this.messagingTemplate = messagingTemplate;
+        this.roundTimerService = roundTimerService;
     }
 
     @MessageMapping("/lobby.join")
     public void joinLobby(JoinLobbyMessage message) {
-        LobbyState lobbyState = gameManager.getLobbyState(message.gameId());
+
         Player player = new Player(
                 message.playerId(),
                 message.name()
@@ -32,6 +37,9 @@ public class LobbyController {
                 message.gameId(),
                 player
         );
+
+        LobbyState lobbyState = gameManager.getLobbyState(message.gameId());
+
         messagingTemplate.convertAndSend(
                 "/topic/lobby." + message.gameId(),
                 lobbyState
@@ -41,13 +49,17 @@ public class LobbyController {
     @MessageMapping("/game.start")
     public void startGame(StartGameMessage message) {
         gameManager.startGame(
-                message.gameId(), message.playerId()
+                message.gameId(),
+                message.playerId()
         );
 
-        LobbyState state = gameManager.getLobbyState(message.gameId());
+        Instant roundEndTime = gameManager.getRoundEndTime(message.gameId());
+        roundTimerService.scheduleRoundEnd(message.gameId(), roundEndTime);
+
+        SubmissionState state = gameManager.getSubmissionState(message.gameId());
 
         messagingTemplate.convertAndSend(
-                "/topic/lobby." + message.gameId(),
+                "/topic/game." + message.gameId(),
                 state
         );
     }
@@ -63,7 +75,7 @@ public class LobbyController {
         SubmissionState state = gameManager.getSubmissionState(message.gameId());
 
         messagingTemplate.convertAndSend(
-                "/topic/round." + message.gameId(),
+                "/topic/game." + message.gameId(),
                 state
         );
 

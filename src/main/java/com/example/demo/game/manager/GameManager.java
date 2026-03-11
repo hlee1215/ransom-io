@@ -4,9 +4,11 @@ import com.example.demo.game.domain.Game;
 import com.example.demo.game.domain.Player;
 import com.example.demo.websocket.dto.LobbyState;
 import com.example.demo.websocket.dto.PlayerView;
+import com.example.demo.websocket.dto.ScoringState;
 import com.example.demo.websocket.dto.SubmissionState;
 import org.springframework.stereotype.Component;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -73,6 +75,13 @@ public class GameManager {
         }
     }
 
+    public Instant getRoundEndTime(String gameId) {
+        Game game = getGame(gameId);
+        synchronized (game) {
+            return game.getRoundEndTime();
+        }
+    }
+
     public LobbyState getLobbyState(String gameId) {
         Game game = getGame(gameId);
 
@@ -96,12 +105,29 @@ public class GameManager {
     public SubmissionState getSubmissionState (String gameId){
         Game game = getGame(gameId);
         synchronized (game){
+            int submittedCount = game.getSubmissions().size();
+            int playersRemaining = game.getPlayers().size() - submittedCount;
+
             return new SubmissionState(
                     gameId,
+                    game.getState().name(),
                     game.getRoundNumber(),
                     game.getRoundEndTime(),
-                    game.getSubmissions().size(),
-                    game.getPlayers().size()
+                    submittedCount,
+                    playersRemaining
+            );
+        }
+    }
+
+    public ScoringState getScoringState(String gameId) {
+        Game game = getGame(gameId);
+
+        synchronized (game) {
+            return new ScoringState(
+                    gameId,
+                    game.getRoundNumber(),
+                    game.getSubmissions(),
+                    game.getScores()
             );
         }
     }
