@@ -4,6 +4,7 @@ import com.example.demo.game.domain.Game;
 import com.example.demo.game.domain.Player;
 import com.example.demo.websocket.dto.LobbyState;
 import com.example.demo.websocket.dto.PlayerView;
+import com.example.demo.websocket.dto.SubmissionState;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -88,6 +89,19 @@ public class GameManager {
                     game.getState().name(),
                     players.size(),
                     players
+            );
+        }
+    }
+
+    public SubmissionState getSubmissionState (String gameId){
+        Game game = getGame(gameId);
+        synchronized (game){
+            return new SubmissionState(
+                    gameId,
+                    game.getRoundNumber(),
+                    game.getRoundEndTime(),
+                    game.getSubmissions().size(),
+                    game.getPlayers().size()
             );
         }
     }

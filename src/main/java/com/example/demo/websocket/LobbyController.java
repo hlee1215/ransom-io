@@ -4,9 +4,7 @@ package com.example.demo.websocket;
 
 import com.example.demo.game.domain.Player;
 import com.example.demo.game.manager.GameManager;
-import com.example.demo.websocket.dto.JoinLobbyMessage;
-import com.example.demo.websocket.dto.LobbyState;
-import com.example.demo.websocket.dto.StartGameMessage;
+import com.example.demo.websocket.dto.*;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
@@ -53,5 +51,23 @@ public class LobbyController {
                 state
         );
     }
+
+    @MessageMapping("/game.submit")
+    public void submit(SubmissionMessage message){
+        gameManager.submit(
+                message.gameId(),
+                message.playerId(),
+                message.submission()
+        );
+
+        SubmissionState state = gameManager.getSubmissionState(message.gameId());
+
+        messagingTemplate.convertAndSend(
+                "/topic/round." + message.gameId(),
+                state
+        );
+
+    }
+
 
 }

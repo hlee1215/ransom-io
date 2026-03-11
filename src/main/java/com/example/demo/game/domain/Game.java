@@ -36,6 +36,7 @@ public class Game {
     public Map<String, String> getSubmissions() {
         return Collections.unmodifiableMap(submissions);
     }
+    @Getter
     private Instant roundEndTime;
     public Game(String id, String hostId) {
         this.id = id;
