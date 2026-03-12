@@ -131,4 +131,11 @@ public class GameManager {
             );
         }
     }
+
+    public boolean allPlayersSubmitted(String gameId) {
+        Game game = getGame(gameId);
+        synchronized (game) {
+            return game.allPlayersSubmitted();
+        }
+    }
 }

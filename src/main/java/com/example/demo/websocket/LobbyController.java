@@ -65,20 +65,32 @@ public class LobbyController {
     }
 
     @MessageMapping("/game.submit")
-    public void submit(SubmissionMessage message){
+    public void submit(SubmissionMessage message) {
         gameManager.submit(
                 message.gameId(),
                 message.playerId(),
                 message.submission()
         );
 
-        SubmissionState state = gameManager.getSubmissionState(message.gameId());
+        if (gameManager.allPlayersSubmitted(message.gameId())) {
+            roundTimerService.cancelRoundTimer(message.gameId());
 
-        messagingTemplate.convertAndSend(
-                "/topic/game." + message.gameId(),
-                state
-        );
+            gameManager.endRound(message.gameId());
 
+            ScoringState scoringState = gameManager.getScoringState(message.gameId());
+
+            messagingTemplate.convertAndSend(
+                    "/topic/game." + message.gameId(),
+                    scoringState
+            );
+        } else {
+            SubmissionState submissionState = gameManager.getSubmissionState(message.gameId());
+
+            messagingTemplate.convertAndSend(
+                    "/topic/game." + message.gameId(),
+                    submissionState
+            );
+        }
     }
 
 

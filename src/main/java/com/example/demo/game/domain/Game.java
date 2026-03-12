@@ -150,6 +150,12 @@ public class Game {
         state = GameState.SUBMISSION;
     }
 
+    public boolean allPlayersSubmitted() {
+        return submissions.size() == players.size();
+    }
+
+
+
 
 }
 
