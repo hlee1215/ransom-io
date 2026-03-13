@@ -93,5 +93,25 @@ public class LobbyController {
         }
     }
 
+    @MessageMapping("/game.vote")
+    public void vote(VoteMessage message) {
+
+        gameManager.vote(
+                message.gameId(),
+                message.playerId(),
+                message.submissionId()
+        );
+
+        ScoringState state =
+                gameManager.getScoringState(message.gameId());
+
+        messagingTemplate.convertAndSend(
+                "/topic/game." + message.gameId(),
+                state
+        );
+    }
+
+
+
 
 }

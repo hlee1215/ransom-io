@@ -13,6 +13,7 @@ public class GameManager {
 
     private final Map<String, Game> games = new ConcurrentHashMap<>();
     private final Map<String, Map<String, String>> roundSubmissionMap = new ConcurrentHashMap<>();
+    private final Map<String, Map<String, String>> roundVotes = new ConcurrentHashMap<>();
 
     public String createGame(String hostId, int maxRounds) {
         String gameId = UUID.randomUUID().toString();
@@ -56,10 +57,43 @@ public class GameManager {
         }
     }
 
-    public void scoreRound(String gameId) {
+    public void vote(String gameId, String playerId, String submissionId) {
+
         Game game = getGame(gameId);
+
         synchronized (game) {
-            game.scoreRound();
+
+            Map<String, String> submissionToPlayer = roundSubmissionMap.get(gameId);
+
+            if (submissionToPlayer == null) {
+                throw new IllegalStateException("Voting not active");
+            }
+
+            String authorId = submissionToPlayer.get(submissionId);
+
+            if (authorId == null) {
+                throw new IllegalArgumentException("Invalid submission");
+            }
+
+            if (authorId.equals(playerId)) {
+                throw new IllegalStateException("Cannot vote for your own submission");
+            }
+
+            if (!game.getPlayers().containsKey(playerId)) {
+                throw new IllegalStateException("Player not in game");
+            }
+
+            Map<String, String> votes =
+                    roundVotes.computeIfAbsent(gameId, k -> new HashMap<>());
+
+            if (votes.containsKey(playerId)) {
+                throw new IllegalStateException("Player already voted");
+            }
+
+
+            votes.put(playerId, submissionId);
+
+            game.incrementScore(authorId);
         }
     }
 
@@ -67,6 +101,8 @@ public class GameManager {
         Game game = getGame(gameId);
         synchronized (game) {
             game.startNextRound();
+            roundVotes.remove(gameId);
+            roundSubmissionMap.remove(gameId);
         }
     }
 

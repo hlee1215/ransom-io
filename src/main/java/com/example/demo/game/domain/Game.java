@@ -121,14 +121,8 @@ public class Game {
 
 
     //-----------------------------------------SCORING--------------------------------------------------------//
-    public void scoreRound() {
-        if (state != GameState.SCORING) {
-            throw new IllegalStateException("Not in scoring state");
-        }
-
-        for (String playerId : submissions.keySet()) {
-            scores.put(playerId, scores.getOrDefault(playerId, 0) + 1);
-        }
+    public void incrementScore(String playerId) {
+        scores.put(playerId, scores.getOrDefault(playerId, 0) + 1);
     }
 
     public void startNextRound() {
