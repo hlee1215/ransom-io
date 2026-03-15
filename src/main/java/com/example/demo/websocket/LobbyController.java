@@ -50,7 +50,7 @@ public class LobbyController {
     public void startGame(StartGameMessage message) {
         gameManager.startGame(
                 message.gameId(),
-                message.playerId()
+                message.playerId() //ensures only host can start
         );
 
         Instant roundEndTime = gameManager.getRoundEndTime(message.gameId());

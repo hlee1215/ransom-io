@@ -14,7 +14,7 @@ public class GameManager {
     private final Map<String, Game> games = new ConcurrentHashMap<>();
     private final Map<String, Map<String, String>> roundSubmissionMap = new ConcurrentHashMap<>();
     private final Map<String, Map<String, String>> roundVotes = new ConcurrentHashMap<>();
-    private boolean allVoted;
+
 
     public String createGame(String hostId, int maxRounds) {
         String gameId = UUID.randomUUID().toString();
@@ -155,37 +155,37 @@ public class GameManager {
 
     public ScoringState getScoringState(String gameId) {
         Game game = getGame(gameId);
-        Map<String, String> submissionToPlayer = new HashMap<>();
-        List<SubmissionView> submissionViews = new ArrayList<>();
-
-
-        int id = 0;
-        for (Map.Entry<String, String> entry : game.getSubmissions().entrySet()) {
-
-            String playerId = entry.getKey();
-            String text = entry.getValue();
-
-            String submissionId = String.valueOf(id++);
-
-            submissionToPlayer.put(submissionId, playerId);
-
-            submissionViews.add(
-                    new SubmissionView(submissionId, text)
-            );
-        }
-
-        Collections.shuffle(submissionViews);
-
-        roundSubmissionMap.put(gameId, submissionToPlayer);
-
         synchronized (game) {
+            Map<String, String> submissionToPlayer = new HashMap<>();
+            List<SubmissionView> submissionViews = new ArrayList<>();
+
+            int id = 0;
+            for (Map.Entry<String, String> entry : game.getSubmissions().entrySet()) {
+
+                String playerId = entry.getKey();
+                String text = entry.getValue();
+
+                String submissionId = String.valueOf(id++);
+
+                submissionToPlayer.put(submissionId, playerId);
+
+                submissionViews.add(
+                        new SubmissionView(submissionId, text)
+                );
+            }
+
+            Collections.shuffle(submissionViews);
+
+            roundSubmissionMap.put(gameId, submissionToPlayer);
+
             return new ScoringState(
                     gameId,
                     game.getRoundNumber(),
                     submissionViews,
-                    game.getScores()
+                    Map.copyOf(game.getScores())
             );
         }
+
     }
 
     public boolean allPlayersSubmitted(String gameId) {
