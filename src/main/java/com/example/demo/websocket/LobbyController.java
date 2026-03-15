@@ -96,19 +96,43 @@ public class LobbyController {
     @MessageMapping("/game.vote")
     public void vote(VoteMessage message) {
 
-        gameManager.vote(
+        boolean roundFinished = gameManager.vote(
                 message.gameId(),
                 message.playerId(),
                 message.submissionId()
         );
 
-        ScoringState state =
-                gameManager.getScoringState(message.gameId());
+        if (roundFinished) {
 
-        messagingTemplate.convertAndSend(
-                "/topic/game." + message.gameId(),
-                state
-        );
+            gameManager.startNextRound(message.gameId());
+
+            Instant roundEndTime =
+                    gameManager.getRoundEndTime(message.gameId());
+
+            roundTimerService.scheduleRoundEnd(
+                    message.gameId(),
+                    roundEndTime
+            );
+
+            //obtain different snapshot
+            SubmissionState state =
+                    gameManager.getSubmissionState(message.gameId());
+
+            messagingTemplate.convertAndSend(
+                    "/topic/game." + message.gameId(),
+                    state
+            );
+
+        } else {
+
+            ScoringState state =
+                    gameManager.getScoringState(message.gameId());
+
+            messagingTemplate.convertAndSend(
+                    "/topic/game." + message.gameId(),
+                    state
+            );
+        }
     }
 
 

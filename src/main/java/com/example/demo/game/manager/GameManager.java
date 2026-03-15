@@ -14,6 +14,7 @@ public class GameManager {
     private final Map<String, Game> games = new ConcurrentHashMap<>();
     private final Map<String, Map<String, String>> roundSubmissionMap = new ConcurrentHashMap<>();
     private final Map<String, Map<String, String>> roundVotes = new ConcurrentHashMap<>();
+    private boolean allVoted;
 
     public String createGame(String hostId, int maxRounds) {
         String gameId = UUID.randomUUID().toString();
@@ -57,7 +58,7 @@ public class GameManager {
         }
     }
 
-    public void vote(String gameId, String playerId, String submissionId) {
+    public boolean vote(String gameId, String playerId, String submissionId) {
 
         Game game = getGame(gameId);
 
@@ -92,10 +93,12 @@ public class GameManager {
 
 
             votes.put(playerId, submissionId);
-
             game.incrementScore(authorId);
+
+            return votes.size() == game.getPlayers().size();
         }
     }
+
 
     public void startNextRound(String gameId) {
         Game game = getGame(gameId);

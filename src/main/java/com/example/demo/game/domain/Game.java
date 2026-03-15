@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Game {
+    private static final long ROUND_DURATION_SECONDS = 0;
     @Getter
     private final String id;
     @Getter
@@ -140,7 +141,7 @@ public class Game {
         roundNumber++;
         submissions.clear();
         currentPrompt = "Current Prompt"; // stub for now, promptService.generate.prompt() later
-        roundEndTime = Instant.now().plusSeconds(60);
+        roundEndTime = Instant.now().plusSeconds(ROUND_DURATION_SECONDS);
         state = GameState.SUBMISSION;
     }
 
