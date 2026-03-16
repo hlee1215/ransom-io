@@ -1,6 +1,7 @@
 package com.example.demo.game.manager;
 
 import com.example.demo.game.domain.Game;
+import com.example.demo.game.domain.GameState;
 import com.example.demo.game.domain.Player;
 import com.example.demo.websocket.dto.*;
 import org.springframework.stereotype.Component;
@@ -199,5 +200,19 @@ public class GameManager {
         synchronized (game) {
             return game.allPlayersSubmitted();
         }
+    }
+
+    public boolean isGameFinished(String gameId) {
+        Game game = getGame(gameId);
+
+        synchronized (game) {
+            return game.getState() == GameState.FINISHED;
+        }
+    }
+
+    public void removeGame(String gameId) {
+        games.remove(gameId);
+        roundVotes.remove(gameId);
+        roundSubmissionMap.remove(gameId);
     }
 }

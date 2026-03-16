@@ -105,7 +105,9 @@ public class LobbyController {
         if (roundFinished) {
 
             gameManager.startNextRound(message.gameId());
-
+            if (gameManager.isGameFinished(message.gameId())) {
+                gameManager.removeGame(message.gameId());
+            }
             Instant roundEndTime =
                     gameManager.getRoundEndTime(message.gameId());
 
