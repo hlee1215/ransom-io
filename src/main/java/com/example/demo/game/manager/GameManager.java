@@ -14,6 +14,7 @@ public class GameManager {
     private final Map<String, Game> games = new ConcurrentHashMap<>();
     private final Map<String, Map<String, String>> roundSubmissionMap = new ConcurrentHashMap<>();
     private final Map<String, Map<String, String>> roundVotes = new ConcurrentHashMap<>();
+    private final Map<String, ScoringState> scoringStates = new ConcurrentHashMap<>();
 
 
     public String createGame(String hostId, int maxRounds) {
@@ -154,6 +155,11 @@ public class GameManager {
     }
 
     public ScoringState getScoringState(String gameId) {
+        ScoringState existing = scoringStates.get(gameId);
+        if (existing != null) {
+            return existing;
+        }
+
         Game game = getGame(gameId);
         synchronized (game) {
             Map<String, String> submissionToPlayer = new HashMap<>();
