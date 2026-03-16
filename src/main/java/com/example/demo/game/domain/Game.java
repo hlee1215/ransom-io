@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Game {
-    private static final long ROUND_DURATION_SECONDS = 0;
+    private static final long ROUND_DURATION_SECONDS = 60;
     @Getter
     private final String id;
     @Getter
@@ -62,7 +62,8 @@ public class Game {
         // initialize round data
         state = GameState.SUBMISSION;
         roundNumber = 1;
-        roundEndTime = Instant.now().plusSeconds(60);
+        currentPrompt = "Current Prompt";
+        roundEndTime = Instant.now().plusSeconds(ROUND_DURATION_SECONDS);
     }
     public void addPlayer(Player player) {
 
@@ -114,15 +115,19 @@ public class Game {
 
     public void endRound() {
         if (state != GameState.SUBMISSION) {
-            throw new IllegalStateException("Cannot end round in current state");
+            return;
         }
 
         state = GameState.SCORING;
+
     }
 
 
     //-----------------------------------------SCORING--------------------------------------------------------//
     public void incrementScore(String playerId) {
+        if (!players.containsKey(playerId)) {
+            throw new IllegalStateException("Invalid player");
+        }
         scores.put(playerId, scores.getOrDefault(playerId, 0) + 1);
     }
 
