@@ -108,6 +108,7 @@ public class GameManager {
             game.startNextRound();
             roundVotes.remove(gameId);
             roundSubmissionMap.remove(gameId);
+            scoringStates.remove(gameId);
         }
     }
 
@@ -184,13 +185,15 @@ public class GameManager {
             Collections.shuffle(submissionViews);
 
             roundSubmissionMap.put(gameId, submissionToPlayer);
-
-            return new ScoringState(
+            ScoringState state = new ScoringState(
                     gameId,
                     game.getRoundNumber(),
                     submissionViews,
                     Map.copyOf(game.getScores())
             );
+
+            scoringStates.put(gameId, state);
+            return state;
         }
 
     }
@@ -214,5 +217,6 @@ public class GameManager {
         games.remove(gameId);
         roundVotes.remove(gameId);
         roundSubmissionMap.remove(gameId);
+        scoringStates.remove(gameId);
     }
 }
