@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Game Debug Client</title>
+</head>
+
+<body>
+
+<h3>Game Debug Console</h3>
+
+<button onclick="connect()">Connect</button>
+
+<button onclick="joinP1()">Join P1</button>
+<button onclick="joinP2()">Join P2</button>
+
+<button onclick="start()">Start Game</button>
+
+<button onclick="submitP1()">Submit P1</button>
+<button onclick="submitP2()">Submit P2</button>
+
+<button onclick="voteP1()">Vote P1</button>
+<button onclick="voteP2()">Vote P2</button>
+
+<pre id="log"></pre>
+
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+
+<script>
+
+    let stomp;
+    let gameId = "af8ec4df-c26d-44f9-9108-4b8bf1203774"; // UPDATE EVERYTIME NEW GAME STARTS
+
+    function log(msg){
+        document.getElementById("log").textContent += msg + "\n";
+    }
+
+    function connect(){
+
+        const socket = new SockJS("http://localhost:8080/ws");
+        stomp = Stomp.over(socket);
+
+        stomp.connect({}, () => {
+
+            log("Connected to server");
+
+            stomp.subscribe("/topic/game." + gameId, message => {
+
+                const data = JSON.parse(message.body);
+
+                // Detect scoring state (has submissions)
+                if (data.submissions !== undefined) {
+
+                    currentSubmissions = data.submissions;
+
+                    log("=== SCORING ===");
+
+                    data.submissions.forEach(s => {
+                        log(`ID: ${s.submissionId} → ${s.text}`);
+                    });
+
+                    log("Scores: " + JSON.stringify(data.scores));
+                    return;
+                }
+
+                log("SERVER: " + message.body);
+            });
+
+            stomp.subscribe("/topic/lobby." + gameId, message => {
+                log("LOBBY: " + message.body);
+            });
+
+        });
+
+    }
+
+    function joinP1(){
+
+        stomp.send("/app/lobby.join", {}, JSON.stringify({
+            gameId: gameId,
+            playerId: "p1",
+            name: "Alice"
+        }));
+
+    }
+
+    function joinP2(){
+
+        stomp.send("/app/lobby.join", {}, JSON.stringify({
+            gameId: gameId,
+            playerId: "p2",
+            name: "Bob"
+        }));
+
+    }
+
+    function start(){
+
+        stomp.send("/app/game.start", {}, JSON.stringify({
+            gameId: gameId,
+            playerId: "p1"
+        }));
+
+    }
+
+    function submitP1(){
+
+        stomp.send("/app/game.submit", {}, JSON.stringify({
+            gameId: gameId,
+            playerId: "p1",
+            submission: "banana"
+        }));
+
+    }
+
+    function submitP2(){
+
+        stomp.send("/app/game.submit", {}, JSON.stringify({
+            gameId: gameId,
+            playerId: "p2",
+            submission: "sauce"
+        }));
+
+    }
+
+    function voteP1(){
+
+        // p1 submitted "banana"
+        const target = currentSubmissions.find(s => s.text !== "banana");
+
+        stomp.send("/app/game.vote", {}, JSON.stringify({
+            gameId: gameId,
+            playerId: "p1",
+            submissionId: target.submissionId
+        }));
+
+    }
+
+
+    function voteP2(){
+
+        // p2 submitted "dog"
+        const target = currentSubmissions.find(s => s.text !== "dog");
+
+        stomp.send("/app/game.vote", {}, JSON.stringify({
+            gameId: gameId,
+            playerId: "p2",
+            submissionId: target.submissionId
+        }));
+
+    }
+
+</script>
+
+</body>
+</html>

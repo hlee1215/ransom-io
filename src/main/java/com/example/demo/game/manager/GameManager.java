@@ -23,6 +23,7 @@ public class GameManager {
         Game game = new Game(gameId, hostId);
         game.setMaxRounds(maxRounds);
         games.put(gameId, game);
+        System.out.println("Game created: " + gameId);
         return gameId;
     }
     //Helper, if read only data is needed, return DTO instead
