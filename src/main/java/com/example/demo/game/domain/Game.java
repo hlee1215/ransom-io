@@ -4,9 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.Instant;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class Game {
     private static final long ROUND_DURATION_SECONDS = 60;
@@ -29,6 +27,7 @@ public class Game {
     private final Map<String, String> submissions = new HashMap<>();
     @Getter
     private final Map<String, Integer> scores = new HashMap<>();
+    private final Map<String, String> submissionIdToPlayer = new HashMap<>();
     private int maxPlayerCount = 5; // Hardcoded for now
 
     public Map<String, Player> getPlayers() {
@@ -37,6 +36,8 @@ public class Game {
     public Map<String, String> getSubmissions() {
         return Collections.unmodifiableMap(submissions);
     }
+    public Map<String, String> getSubmissionIdToPlayer() { return Collections.unmodifiableMap(submissionIdToPlayer);}
+
     @Getter
     private Instant roundEndTime;
     public Game(String id, String hostId) {
@@ -110,6 +111,25 @@ public class Game {
         submissions.put(playerId, text);
     }
 
+    public Map<String, String> buildSubmissionMapping() {
+
+        if (!submissionIdToPlayer.isEmpty()) {
+            return submissionIdToPlayer; // already built → reuse
+        }
+
+        List<Map.Entry<String, String>> entries =
+                new ArrayList<>(submissions.entrySet());
+
+        Collections.shuffle(entries);
+
+        int id = 0;
+
+        for (Map.Entry<String, String> entry : entries) {
+            submissionIdToPlayer.put(String.valueOf(id++), entry.getKey());
+        }
+
+        return submissionIdToPlayer;
+    }
 
     public void assignWords(){}
 
@@ -118,10 +138,10 @@ public class Game {
             return;
         }
 
+        submissionIdToPlayer.clear();
         state = GameState.SCORING;
 
     }
-
 
     //-----------------------------------------SCORING--------------------------------------------------------//
     public void incrementScore(String playerId) {

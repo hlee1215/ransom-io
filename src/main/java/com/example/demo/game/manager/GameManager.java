@@ -13,7 +13,6 @@ import java.util.concurrent.ConcurrentHashMap;
 public class GameManager {
 
     private final Map<String, Game> games = new ConcurrentHashMap<>();
-    private final Map<String, Map<String, String>> roundSubmissionMap = new ConcurrentHashMap<>();
     private final Map<String, Map<String, String>> roundVotes = new ConcurrentHashMap<>();
     private final Map<String, ScoringState> scoringStates = new ConcurrentHashMap<>();
 
@@ -67,7 +66,7 @@ public class GameManager {
 
         synchronized (game) {
 
-            Map<String, String> submissionToPlayer = roundSubmissionMap.get(gameId);
+            Map<String, String> submissionToPlayer = game.getSubmissionIdToPlayer();
 
             if (submissionToPlayer == null) {
                 throw new IllegalStateException("Voting not active");
@@ -108,7 +107,6 @@ public class GameManager {
         synchronized (game) {
             game.startNextRound();
             roundVotes.remove(gameId);
-            roundSubmissionMap.remove(gameId);
             scoringStates.remove(gameId);
         }
     }
@@ -158,45 +156,34 @@ public class GameManager {
     }
 
     public ScoringState getScoringState(String gameId) {
-        ScoringState existing = scoringStates.get(gameId);
-        if (existing != null) {
-            return existing;
-        }
 
         Game game = getGame(gameId);
+
         synchronized (game) {
-            Map<String, String> submissionToPlayer = new HashMap<>();
+
+            // Build mapping ONCE (inside Game)
+            Map<String, String> submissionToPlayer = game.buildSubmissionMapping();
+
             List<SubmissionView> submissionViews = new ArrayList<>();
 
-            int id = 0;
-            for (Map.Entry<String, String> entry : game.getSubmissions().entrySet()) {
+            for (Map.Entry<String, String> entry : submissionToPlayer.entrySet()) {
 
-                String playerId = entry.getKey();
-                String text = entry.getValue();
-
-                String submissionId = String.valueOf(id++);
-
-                submissionToPlayer.put(submissionId, playerId);
+                String submissionId = entry.getKey();
+                String playerId = entry.getValue();
+                String text = game.getSubmissions().get(playerId);
 
                 submissionViews.add(
-                        new SubmissionView(submissionId, text)
+                        new SubmissionView(submissionId, text) //anoynmous submission
                 );
             }
 
-            Collections.shuffle(submissionViews);
-
-            roundSubmissionMap.put(gameId, submissionToPlayer);
-            ScoringState state = new ScoringState(
+            return new ScoringState(
                     gameId,
                     game.getRoundNumber(),
                     submissionViews,
                     Map.copyOf(game.getScores())
             );
-
-            scoringStates.put(gameId, state);
-            return state;
         }
-
     }
 
     public boolean allPlayersSubmitted(String gameId) {
@@ -217,7 +204,6 @@ public class GameManager {
     public void removeGame(String gameId) {
         games.remove(gameId);
         roundVotes.remove(gameId);
-        roundSubmissionMap.remove(gameId);
         scoringStates.remove(gameId);
     }
 }

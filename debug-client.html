@@ -29,8 +29,9 @@
 <script>
 
     let stomp;
-    let gameId = "af8ec4df-c26d-44f9-9108-4b8bf1203774"; // UPDATE EVERYTIME NEW GAME STARTS
-
+    let gameId = "8af6789b-1fb0-4fc9-85f1-c2ecaf7f28af";// UPDATE EVERYTIME NEW GAME STARTS
+    const p1Text = "banana";
+    const p2Text = "sauce";
     function log(msg){
         document.getElementById("log").textContent += msg + "\n";
     }
@@ -124,30 +125,21 @@
     }
 
     function voteP1(){
-
-        // p1 submitted "banana"
-        const target = currentSubmissions.find(s => s.text !== "banana");
-
+        const target = currentSubmissions.find(s => s.text !== p1Text);
         stomp.send("/app/game.vote", {}, JSON.stringify({
             gameId: gameId,
             playerId: "p1",
             submissionId: target.submissionId
         }));
-
     }
 
-
     function voteP2(){
-
-        // p2 submitted "dog"
-        const target = currentSubmissions.find(s => s.text !== "dog");
-
+        const target = currentSubmissions.find(s => s.text !== p2Text);
         stomp.send("/app/game.vote", {}, JSON.stringify({
             gameId: gameId,
             playerId: "p2",
             submissionId: target.submissionId
         }));
-
     }
 
 </script>

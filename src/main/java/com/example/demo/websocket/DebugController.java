@@ -15,7 +15,7 @@ public class DebugController {
 
     @GetMapping("/create")
     public String createGame() {
-        return gameManager.createGame("p1", 3);
+        return gameManager.createGame("p1", 5);
     }
 
     @DeleteMapping("/{gameId}")
