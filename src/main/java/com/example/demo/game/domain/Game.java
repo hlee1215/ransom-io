@@ -165,10 +165,12 @@ public class Game {
 
         roundNumber++;
         submissions.clear();
+        submissionIdToPlayer.clear();
         currentPrompt = "Current Prompt"; // stub for now, promptService.generate.prompt() later
         roundEndTime = Instant.now().plusSeconds(ROUND_DURATION_SECONDS);
         state = GameState.SUBMISSION;
     }
+
 
     public boolean allPlayersSubmitted() {
         return submissions.size() == players.size();
